@@ -38,7 +38,7 @@ class PostController extends Controller
         $request->validate([
             'title' => ['required', 'max:255'],
             'body' => ['required'],
-            'image' => ['nullable', 'file', 'max:1000', 'mimes:png,jpg,webp']
+
         ]);
 
         $path = null;
@@ -79,13 +79,28 @@ class PostController extends Controller
     public function update(Request $request, Post $post)
     {
         // Validate
-        $fields = $request->validate([
+        $request->validate([
             'title' => ['required', 'max:255'],
             'body' => ['required'],
+            'image' => ['nullable', 'file', 'max:1000', 'mimes:png,jpg,webp']
         ]);
 
+        // Store Image if Exists
+        $path = $post->image ?? null;
+        if($request->hasFile('image')) {
+            // if file exist delete prev image
+            if($post->image) {
+                Storage::disk('public')->delete($post->image);
+            }
+            $path = Storage::disk('public')->put('post_images', $request->image);
+        }
+
         // Update A Post
-        $post->update($fields);
+        $post->update([
+            'title' => $request->title,
+            'body' => $request->body,
+            'image' => $path
+        ]);
 
         return redirect()->route('dashboard')->with('success','Your post was updated');
 
@@ -96,6 +111,11 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        // Delete image
+        if($post->image) {
+            Storage::disk('public')->delete($post->image);
+        }
+
         $post->delete();
 
         return back()->with('delete','Your post was deleted!');

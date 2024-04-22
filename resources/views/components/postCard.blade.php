@@ -2,13 +2,12 @@
 
 <div class="card">
     {{-- Cover Photo --}}
-    <div>
+    <div class="h-100 rounded-md mb-4 w-1/4 object-cover">
         @if ($post->image)
             <img src="{{asset('storage/'.$post->image)}}" alt="">
         @else
             <img src="{{asset('storage/post_images/u681tD35xNrixp54TjHsaDxEtalbdSmQBxpMhiAH.jpg')}}" alt="">
         @endif
-
     </div>
 
     {{-- Title --}}
