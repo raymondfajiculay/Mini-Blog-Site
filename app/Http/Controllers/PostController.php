@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -34,13 +35,24 @@ class PostController extends Controller
     public function store(Request $request)
     {
         // Validate
-        $fields = $request->validate([
+        $request->validate([
             'title' => ['required', 'max:255'],
             'body' => ['required'],
+            'image' => ['nullable', 'file', 'max:1000', 'mimes:png,jpg,webp']
         ]);
 
+        $path = null;
+        // Store Image if Exists
+        if($request->hasFile('image')) {
+            $path = Storage::disk('public')->put('post_images', $request->image);
+        }
+
         // Create A Post
-        Auth::user()->posts()->create($fields);
+        Auth::user()->posts()->create([
+            'title' => $request->title,
+            'body' => $request->body,
+            'image' => $path
+        ]);
 
         return back()->with('success','Your post was created');
     }
